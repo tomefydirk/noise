@@ -48,7 +48,8 @@ fn normalize_perlin(value: f64) -> u8 {
     normalized as u8
 }
 fn perlin(x:f64,y:f64,perm:PermutationTable){
-    let x=
+    let X=x.floor() as u32 & 255;
+    let Y=Y.floor() as u32 & 255;
 }
 fn main() {
     let imgx=128;
