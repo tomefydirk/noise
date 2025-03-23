@@ -9,9 +9,9 @@ pub struct Vec2(f32,f32);
 impl Vec2 {
     fn my_hash(ix:&u32,iy:&u32,seed: &u32)->u64{
         let mut hash = (*seed as u64) + (*ix as u64) * 33 + (*iy as u64) * 57;
-        hash ^= (hash >> 30);
+        hash ^= hash >> 30;
         hash = hash.wrapping_mul(0xbf58476d1ce4e5b9);
-        hash ^= (hash >> 27);
+        hash ^= hash >> 27;
         hash = hash.wrapping_mul(0x94d049bb133111eb);
         hash
     }
