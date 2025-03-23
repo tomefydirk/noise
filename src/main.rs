@@ -1,8 +1,7 @@
 use std::f32::consts::PI;
-use std::ptr::hash;
 use image::Rgba;
 use image::ImageBuffer;
-use bevy_math::ops::{sin,cos};
+use bevy_math::ops::cos;
 #[derive(Debug)]
 pub struct Vec2(f32,f32);
 
@@ -35,7 +34,7 @@ fn normalize_perlin(value: f32) -> u8 {
     let normalized = ((value + 1.0) / 2.0 * 255.0).round();
     normalized as u8
 }  
-fn dotGridgradient(ix:u32,iy:u32,x:f32,y:f32,seed:&u32)->f32{
+fn dot_gridgradient(ix:u32,iy:u32,x:f32,y:f32,seed:&u32)->f32{
     let gradient=Vec2::init_rand(ix, iy,seed);
     let dx=x- (ix as f32);
     let dy=y- (iy as f32); 
@@ -52,22 +51,22 @@ fn perlin(x:f32,y:f32,seed:&u32)->f32{
     let xf=x-x0 as f32;
     let yf= y- y0 as f32;
      
-    let mut n0=dotGridgradient(x0, y0, x, y,seed);
-    let mut n1=dotGridgradient(x1, y0, x, y,seed);
+    let mut n0=dot_gridgradient(x0, y0, x, y,seed);
+    let mut n1=dot_gridgradient(x1, y0, x, y,seed);
     let ix0 =interpolate(n0, n1, xf);
 
-     n0=dotGridgradient(x0, y1, x, y,seed);
-     n1=dotGridgradient(x1, y1, x, y,seed);
+     n0=dot_gridgradient(x0, y1, x, y,seed);
+     n1=dot_gridgradient(x1, y1, x, y,seed);
 
     let ix1=interpolate(n0, n1, xf);
 
     interpolate(ix0, ix1, yf)
 }
-fn pixel_constrat(x:u32,y:u32,size:&u32,seed:&u32)->f32{
+fn pixel_constrat(x:u32,y:u32,size:&u32,seed:&u32,resolution:&u32)->f32{
     let mut val=0.0;
     let mut freq=1.0;
     let mut amp=1.0 ;
-    for _i in 0..12{
+    for _i in 0..(*resolution){
         val += perlin((x as f32 * freq) / (*size as f32), (y as f32 * freq) / (*size as f32),seed) * amp;
         freq *=2.0;
         amp  /=2.0;
@@ -78,10 +77,10 @@ fn pixel_constrat(x:u32,y:u32,size:&u32,seed:&u32)->f32{
     val
 
 }
-fn generte_img(imgx:u32,imgy:u32,seed:u32,grid_size:u32){
+fn generte_img(imgx:u32,imgy:u32,seed:u32,grid_size:u32,resolution:u32){
     let mut imgbuf = ImageBuffer::<Rgba<u8>, _>::new(imgx, imgy); 
     for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
-        let resultat_perlin=pixel_constrat(x, y,&grid_size,&seed);
+        let resultat_perlin=pixel_constrat(x, y,&grid_size,&seed,&resolution);
         let r =normalize_perlin (resultat_perlin);
         let g =normalize_perlin(resultat_perlin);
         let b = normalize_perlin(resultat_perlin);
@@ -96,7 +95,7 @@ fn main() {
     let imgx=1000;
     let imgy=1000;
      
-    generte_img(imgx, imgy,230111,400);
+    generte_img(imgx, imgy,230111,400,2);
  
  
     
