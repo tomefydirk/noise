@@ -1,4 +1,5 @@
 use std::f32::consts::PI;
+use std::ptr::hash;
 use image::Rgba;
 use image::ImageBuffer;
 use bevy_math::ops::{sin,cos};
@@ -6,13 +7,23 @@ use bevy_math::ops::{sin,cos};
 pub struct Vec2(f32,f32);
 
 impl Vec2 {
-    fn init_rand(ix:u32,iy:u32,seed:&u32)->Self{
-        let u = *seed + iy ;
-        let v = *seed + ix  ;
-        let mut a:f32=256.0 + (u + v) as f32;
-         a /= PI + *seed as f32 + v  as f32;
-        Vec2(sin(a),cos(a))
+    fn my_hash(ix:&u32,iy:&u32,seed: &u32)->u64{
+        let mut hash = (*seed as u64) + (*ix as u64) * 33 + (*iy as u64) * 57;
+        hash ^= (hash >> 30);
+        hash = hash.wrapping_mul(0xbf58476d1ce4e5b9);
+        hash ^= (hash >> 27);
+        hash = hash.wrapping_mul(0x94d049bb133111eb);
+        hash
     }
+    fn init_rand(ix: u32, iy: u32, seed: &u32) -> Self {
+        let hash=Vec2::my_hash(&ix,&iy,seed);
+        let float_hash = (hash & 0xFFFFFFFF) as f32 / 0xFFFFFFFFu32 as f32; 
+
+
+        let angle = float_hash * 2.0 * PI;
+        Vec2(angle.sin(), angle.cos())
+    }
+
 }
 
 fn interpolate(a0:f32, a1:f32, w:f32)->f32 {
@@ -67,11 +78,10 @@ fn pixel_constrat(x:u32,y:u32,size:&u32,seed:&u32)->f32{
     val
 
 }
-fn generte_img(imgx:u32,imgy:u32,seed:u32){
-    let crid_size=50;
+fn generte_img(imgx:u32,imgy:u32,seed:u32,grid_size:u32){
     let mut imgbuf = ImageBuffer::<Rgba<u8>, _>::new(imgx, imgy); 
     for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
-        let resultat_perlin=pixel_constrat(x, y,&crid_size,&seed);
+        let resultat_perlin=pixel_constrat(x, y,&grid_size,&seed);
         let r =normalize_perlin (resultat_perlin);
         let g =normalize_perlin(resultat_perlin);
         let b = normalize_perlin(resultat_perlin);
@@ -83,10 +93,10 @@ fn generte_img(imgx:u32,imgy:u32,seed:u32){
 } 
 fn main() {
     
-    let imgx=100;
-    let imgy=100;
+    let imgx=1000;
+    let imgy=1000;
      
-    generte_img(imgx, imgy,330211);
+    generte_img(imgx, imgy,230111,400);
  
  
     
